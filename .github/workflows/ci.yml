@@ -1,85 +1,19 @@
-# ──────────────────────────────────────────────────────────────
-# CI Pipeline - Runs tests automatically on every git push
-# File location: .github/workflows/ci.yml
-# ──────────────────────────────────────────────────────────────
-
 name: CI - Run Tests on Push
 
-# WHEN to trigger this pipeline
 on:
   push:
-    branches:
-      - main
-      - develop
-      - "feature/**"     # any branch starting with feature/
+    branches: [main, master, develop]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   test:
-    name: Build & Test
-    runs-on: ubuntu-latest   # GitHub's cloud server (Linux) - works for all Java/Maven projects
-
+    runs-on: ubuntu-latest
     steps:
-
-      # Step 1: Download your repo code onto the runner
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Step 2: Install Java 17 on the runner
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      # Step 3: Cache Maven dependencies
-      # This saves ~187MB of downloads on repeat runs (much faster!)
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      # Step 4: Download all project dependencies
-      - name: Install dependencies
-        run: mvn dependency:resolve --no-transfer-progress
-
-      # Step 5: Compile the source code
-      - name: Compile
-        run: mvn compile --no-transfer-progress
-
-      # Step 6: Run UNIT tests only (classes ending in UnitTest)
-      - name: Run Unit Tests
-        run: mvn test -Dtest="*UnitTest" --no-transfer-progress
-
-      # Step 7: Run INTEGRATION tests only (classes ending in IntegrationTest)
-      - name: Run Integration Tests
-        run: mvn test -Dtest="*IntegrationTest" --no-transfer-progress
-
-      # Step 8: Generate HTML test report (runs even if tests fail)
-      - name: Generate Test Report
-        if: always()
-        run: mvn surefire-report:report --no-transfer-progress -q
-
-      # Step 9: Save test result XML files as downloadable artifact
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: target/surefire-reports/
-          retention-days: 7
-
-      # Step 10: Show test summary directly in the GitHub Actions UI
-      - name: Publish Test Summary
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Test Results Summary
-          path: target/surefire-reports/*.xml
-          reporter: java-junit
-          fail-on-error: false
+      - name: Run Tests
+        run: mvn test --no-transfer-progress
