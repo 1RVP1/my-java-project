@@ -95,12 +95,8 @@ pipeline {
             post {
                 always {
                     // Archive test reports
-                    archiveArtifacts artifacts: 'target/surefire-reports/**/*', 
-                                     fingerprint: true, 
-                                     allowEmptyArchive: true
-                    archiveArtifacts artifacts: 'target/site/**/*', 
-                                     fingerprint: true, 
-                                     allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'target/surefire-reports/**/*', fingerprint: true, allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'target/site/**/*', fingerprint: true, allowEmptyArchive: true
                 }
             }
         }
